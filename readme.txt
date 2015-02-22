@@ -1,9 +1,9 @@
 === Memcached Object Cache ===
-Contributors: ryan, sivel
+Contributors: ryan, sivel, Mike_Cowobo
 Tags: cache, memcached
 Requires at least: 3.0
-Tested up to: 3.5
-Stable tag: 2.0.2
+Tested up to: 4.1.1
+Stable tag: 2.0.3
 
 Use memcached and the PECL memcache extension to provide a backing store for the WordPress object cache.
 
@@ -73,6 +73,9 @@ widget
 `
 
 == Changelog ==
+
+= 2.0.3 =
+* Fix where $expire is more than 30 days in the future
 
 = 2.0.2 =
 * Break references by cloning objects

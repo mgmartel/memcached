@@ -3,9 +3,10 @@
 /*
 Plugin Name: Memcached
 Description: Memcached backend for the WP Object Cache.
-Version: 2.0.2
-Plugin URI: http://wordpress.org/extend/plugins/memcached/
+Version: 2.0.3
+Plugin URI: Plugin URI: http://github.com/mgmartel/memcached
 Author: Ryan Boren, Denis de Bernardy, Matt Martz
+Modifications: Mike Martel
 
 Install this file to wp-content/object-cache.php
 */
@@ -117,7 +118,7 @@ class WP_Object_Cache {
 		}
 
 		$mc =& $this->get_mc($group);
-		$expire = ($expire == 0) ? $this->default_expiration : $expire;
+		$expire = ($expire == 0) ? $this->default_expiration : $expire + time();
 		$result = $mc->add($key, $data, false, $expire);
 
 		if ( false !== $result ) {
@@ -148,7 +149,7 @@ class WP_Object_Cache {
 	function incr($id, $n = 1, $group = 'default' ) {
 		$key = $this->key($id, $group);
 		$mc =& $this->get_mc($group);
-		$this->cache[ $key ] = $mc->increment( $key, $n );	
+		$this->cache[ $key ] = $mc->increment( $key, $n );
 		return $this->cache[ $key ];
 	}
 
@@ -183,7 +184,7 @@ class WP_Object_Cache {
 		if ( false !== $result )
 			unset($this->cache[$key]);
 
-		return $result; 
+		return $result;
 	}
 
 	function flush() {
@@ -259,7 +260,7 @@ class WP_Object_Cache {
 		return $return;
 	}
 
-	function key($key, $group) {	
+	function key($key, $group) {
 		if ( empty($group) )
 			$group = 'default';
 
@@ -298,7 +299,8 @@ class WP_Object_Cache {
 		if ( in_array($group, $this->no_mc_groups) )
 			return true;
 
-		$expire = ($expire == 0) ? $this->default_expiration : $expire;
+		$expire = ($expire == 0) ? $this->default_expiration : $expire + time();
+
 		$mc =& $this->get_mc($group);
 		$result = $mc->set($key, $data, false, $expire);
 
@@ -328,15 +330,15 @@ class WP_Object_Cache {
 		echo "</p>\n";
 		echo "<h3>Memcached:</h3>";
 		foreach ( $this->group_ops as $group => $ops ) {
-			if ( !isset($_GET['debug_queries']) && 500 < count($ops) ) { 
-				$ops = array_slice( $ops, 0, 500 ); 
+			if ( !isset($_GET['debug_queries']) && 500 < count($ops) ) {
+				$ops = array_slice( $ops, 0, 500 );
 				echo "<big>Too many to show! <a href='" . add_query_arg( 'debug_queries', 'true' ) . "'>Show them anyway</a>.</big>\n";
-			} 
+			}
 			echo "<h4>$group commands</h4>";
 			echo "<pre>\n";
 			$lines = array();
 			foreach ( $ops as $op ) {
-				$lines[] = $this->colorize_debug_line($op); 
+				$lines[] = $this->colorize_debug_line($op);
 			}
 			print_r($lines);
 			echo "</pre>\n";
@@ -392,6 +394,9 @@ class WP_Object_Cache {
 
 		$this->cache_hits =& $this->stats['get'];
 		$this->cache_misses =& $this->stats['add'];
+
+		// If default expiration is not forever (0), then convert into timestamp
+		if ( $this->default_expiration !== 0 )
+			$this->default_expiration += time();
 	}
 }
-?>
